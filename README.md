@@ -17,7 +17,7 @@ Only `Cache-Control` and `Content-Type` headers are currently supported.
 
 ## Command-line application
 
-This project is just a Golang module. A command-line application version is available at [https://github.com/cariad/s3headersetter](github.com/cariad/s3headersetter).
+This project is just a Golang module. A command-line application version is available at [cariad/s3headersetter](https://github.com/cariad/s3headersetter).
 
 I use that command-line application in my [Hugo website deployment pipeline](https://github.com/cariad/aws-hugo).
 
