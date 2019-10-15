@@ -7,14 +7,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 )
 
-func compare(current string, new string) (bool, string) {
-	if new == "" {
-		// There is no new value to apply, so no change from the current.
-		return false, current
-	}
-	return (new != current), new
-}
-
 func endsWith(s string, suffix string) bool {
 	ls := strings.ToLower(s)
 	lsuffix := strings.ToLower(suffix)
