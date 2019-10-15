@@ -86,3 +86,53 @@ func TestUpdateCopyObjectInput(t *testing.T) {
 	assertEqualString(t, "cache control", *in.CacheControl, "new-cachecontrol")
 	assertEqualString(t, "content type", *in.ContentType, "new-contenttype")
 }
+
+func TestCalculateNewValueWithNilCurrentAndEmptyNew(t *testing.T) {
+	o := NewObject("", "")
+	change, new := o.calculateNewValue("Cache-Control", nil)
+	assertEqualBool(t, "change", change, false)
+	assertEqualString(t, "new value", new, "")
+}
+
+func TestCalculateNewValueWithNilCurrentAndRealNew(t *testing.T) {
+	o := NewObject("", "")
+	o.newHeaders["Cache-Control"] = "new-cachecontrol"
+	change, new := o.calculateNewValue("Cache-Control", nil)
+	assertEqualBool(t, "change", change, true)
+	assertEqualString(t, "new value", new, "new-cachecontrol")
+}
+
+func TestCalculateNewValueWithEmptyCurrentAndEmptyNew(t *testing.T) {
+	o := NewObject("", "")
+	current := ""
+	change, new := o.calculateNewValue("Cache-Control", &current)
+	assertEqualBool(t, "change", change, false)
+	assertEqualString(t, "new value", new, "")
+}
+
+func TestCalculateNewValueWithEmptyCurrentAndRealNew(t *testing.T) {
+	o := NewObject("", "")
+	o.newHeaders["Cache-Control"] = "new-cachecontrol"
+	current := ""
+	change, new := o.calculateNewValue("Cache-Control", &current)
+	assertEqualBool(t, "change", change, true)
+	assertEqualString(t, "new value", new, "new-cachecontrol")
+}
+
+func TestCalculateNewValueWithDifferentCurrentAndNew(t *testing.T) {
+	o := NewObject("", "")
+	o.newHeaders["Cache-Control"] = "new-cachecontrol"
+	current := "current-cachecontrol"
+	change, new := o.calculateNewValue("Cache-Control", &current)
+	assertEqualBool(t, "change", change, true)
+	assertEqualString(t, "new value", new, "new-cachecontrol")
+}
+
+func TestCalculateNewValueWithSameCurrentAndNew(t *testing.T) {
+	o := NewObject("", "")
+	o.newHeaders["Cache-Control"] = "x"
+	current := "x"
+	change, new := o.calculateNewValue("Cache-Control", &current)
+	assertEqualBool(t, "change", change, false)
+	assertEqualString(t, "new value", new, "x")
+}

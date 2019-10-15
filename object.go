@@ -48,9 +48,11 @@ func (o Object) Apply(rules []Rule) error {
 	copy := o.makeCopyObjectInput(head.Metadata)
 	hasChanges := o.updateCopyObjectInput(head, copy)
 	if !hasChanges {
+		o.log("no changes to apply")
 		return nil
 	}
 
+	o.log("Applying changes...")
 	_, err = client.CopyObject(copy)
 	return err
 }
@@ -76,16 +78,46 @@ func (o Object) makeCopyObjectInput(metadata map[string]*string) *s3.CopyObjectI
 	}
 }
 
+func (o Object) log(format string, a ...interface{}) {
+	msg := fmt.Sprintf(format, a...)
+	info("%v: %s", o, msg)
+}
+
+func (o Object) calculateNewValue(header string, currentPtr *string) (bool, string) {
+	new := o.newHeaders[header]
+
+	current := ""
+
+	if currentPtr != nil {
+		current = *currentPtr
+	}
+
+	if new != current {
+		if current == "" {
+			o.log("%s will be set to \"%s\"", header, new)
+		} else {
+			o.log("%s will be updated from \"%s\" to \"%s\"", header, current, new)
+		}
+		return true, new
+	}
+
+	if new == "" {
+		o.log("the rules do not specify a change for %s", header)
+	} else if new == current {
+		o.log("%s will remain \"%s\"", header, current)
+	}
+
+	return false, current
+}
+
 func (o Object) updateCopyObjectInput(head *s3.HeadObjectOutput, in *s3.CopyObjectInput) bool {
-	changed, newCacheControl := compare(*head.CacheControl, o.newHeaders["Cache-Control"])
-	foundChange := changed
-	in.CacheControl = &newCacheControl
+	ccChange, ccNew := o.calculateNewValue("Cache-Control", head.CacheControl)
+	in.CacheControl = &ccNew
 
-	changed, newContentType := compare(*head.ContentType, o.newHeaders["Content-Type"])
-	foundChange = foundChange || changed
-	in.ContentType = &newContentType
+	ctChange, ctNew := o.calculateNewValue("Content-Type", head.ContentType)
+	in.ContentType = &ctNew
 
-	return foundChange
+	return ccChange || ctChange
 }
 
 func (o *Object) queueRuleEffect(rule Rule) {
