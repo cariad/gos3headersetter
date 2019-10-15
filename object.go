@@ -92,22 +92,20 @@ func (o Object) calculateNewValue(header string, currentPtr *string) (bool, stri
 		current = *currentPtr
 	}
 
-	if new != current {
-		if current == "" {
-			o.log("%s will be set to \"%s\"", header, new)
-		} else {
-			o.log("%s will be updated from \"%s\" to \"%s\"", header, current, new)
-		}
-		return true, new
-	}
-
 	if new == "" {
 		o.log("the rules do not specify a change for %s", header)
+		return false, current
 	} else if new == current {
 		o.log("%s will remain \"%s\"", header, current)
+		return false, current
 	}
 
-	return false, current
+	if current == "" {
+		o.log("%s will be set to \"%s\"", header, new)
+	} else {
+		o.log("%s will be updated from \"%s\" to \"%s\"", header, current, new)
+	}
+	return true, new
 }
 
 func (o Object) updateCopyObjectInput(head *s3.HeadObjectOutput, in *s3.CopyObjectInput) bool {

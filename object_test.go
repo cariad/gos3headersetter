@@ -136,3 +136,11 @@ func TestCalculateNewValueWithSameCurrentAndNew(t *testing.T) {
 	assertEqualBool(t, "change", change, false)
 	assertEqualString(t, "new value", new, "x")
 }
+
+func TestCalculateNewValueWithRealCurrentAndEmptyNew(t *testing.T) {
+	o := NewObject("", "")
+	current := "x"
+	change, new := o.calculateNewValue("Cache-Control", &current)
+	assertEqualBool(t, "change", change, false)
+	assertEqualString(t, "new value", new, "x")
+}
